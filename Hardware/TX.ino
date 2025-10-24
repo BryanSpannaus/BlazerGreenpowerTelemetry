@@ -47,33 +47,19 @@ void setup() {
 
 void loop() {
   delay(1000);
-  Serial.println("Transmitting...");
+
 
   char radiopacket[20] = "Hello World #      ";
   itoa(packetnum++, radiopacket + 13, 10);
   radiopacket[19] = 0;
 
-  Serial.print("Sending ");
   Serial.println(radiopacket);
 
   rf95.send((uint8_t *)radiopacket, 20);
   rf95.waitPacketSent();
 
-  Serial.println("Waiting for reply...");
   uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
   uint8_t len = sizeof(buf);
 
-  if (rf95.waitAvailableTimeout(1000)) {
-    if (rf95.recv(buf, &len)) {
-      Serial.print("Got reply: ");
-      Serial.println((char*)buf);
-      Serial.print("RSSI: ");
-      Serial.println(rf95.lastRssi(), DEC);
-    } else {
-      Serial.println("Receive failed");
-    }
-  } else {
-    Serial.println("No reply, is there a listener around?");
-  }
 }
 
