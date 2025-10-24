@@ -8,12 +8,21 @@
 
 #define RF95_FREQ 915.0
 
+//Input Pins
+#define RPM_SENSE
+
+//Output Pins
+#define BUZZER
+
+
 // Don't pass SPI here, let RadioHead use the default hardware_spi instance
 RH_RF95 rf95(RF95_CS, RF95_INT);
 
 int16_t packetnum = 0;
 
 void setup() {
+  pinMode(BUZZER, OUTPUT);
+  
   pinMode(RF95_RST, OUTPUT);
   digitalWrite(RF95_RST, HIGH);
 
@@ -34,7 +43,7 @@ void setup() {
     while (1);
   }
   Serial.println("LoRa radio init OK!");
-
+  
   if (!rf95.setFrequency(RF95_FREQ)) {
     Serial.println("setFrequency failed");
     while (1);
@@ -43,23 +52,23 @@ void setup() {
   Serial.println(RF95_FREQ);
 
   rf95.setTxPower(23, false);
+
+  digitalWrite(BUZZER, HIGH);
+  delay(150);
+  digitalWrite(BUZZER, LOW);
 }
 
 void loop() {
-  delay(1000);
 
-
-  char radiopacket[20] = "Hello World #      ";
+  char radiopacket[20] = ;
   itoa(packetnum++, radiopacket + 13, 10);
   radiopacket[19] = 0;
-
-  Serial.println(radiopacket);
 
   rf95.send((uint8_t *)radiopacket, 20);
   rf95.waitPacketSent();
 
+
   uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
   uint8_t len = sizeof(buf);
-
 }
 
