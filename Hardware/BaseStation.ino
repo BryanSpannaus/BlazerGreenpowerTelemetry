@@ -22,10 +22,8 @@ void setup() {
   pinMode(STATUS_LED, OUTPUT);
   pinMode(DATA_LED, OUTPUT);
   Serial.begin(115200);
-  while (!Serial) delay(1);
-  delay(100);
-
-  Serial.println("LoRa RX using default SPI");
+  
+  delay(5000); //waits 5 seconds before starting output and setup after plugging in device
 
   // Reset LoRa module
   digitalWrite(RF95_RST, LOW);
@@ -33,16 +31,16 @@ void setup() {
   digitalWrite(RF95_RST, HIGH);
   delay(10);
 
-  digitalWrite(STATUS_LED, HIGH);
+  digitalWrite(STATUS_LED, HIGH); //Turn on Green Led
 
   SPI.begin();  // Initialize default SPI bus
 
   if (!rf95.init()) {
-    Serial.println("LoRa radio init failed");
+    Serial.println("Init Fail");
     while (1);
     digitalWrite(STATUS_LED, LOW);
   }
-  Serial.println("LoRa radio init OK!");
+  Serial.println("Init Ok");
 
   if (!rf95.setFrequency(RF95_FREQ)) {
     Serial.println("setFrequency failed");
@@ -65,12 +63,8 @@ void loop() {
       digitalWrite(DATA_LED, HIGH);
 
       RH_RF95::printBuffer("Received bytes: ", buf, len);
-      Serial.print("Message: ");
       Serial.println((char*)buf);
-      Serial.print("RSSI: ");
-      Serial.println(rf95.lastRssi(), DEC);
-
-      Serial.println("Sending reply...");
+      
       uint8_t data[] = "RCV_CONF";
       rf95.send(data, sizeof(data));
       rf95.waitPacketSent();
@@ -78,7 +72,7 @@ void loop() {
       digitalWrite(LED_BUILTIN, LOW);
       digitalWrite(DATA_LED, LOW);
     } else {
-      Serial.println("Receive failed");
+      Serial.println("RX Fail");
     }
   }
 }
