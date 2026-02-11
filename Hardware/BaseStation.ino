@@ -1,6 +1,7 @@
 
 #include <SPI.h>
 #include <RH_RF95.h>
+#include <stream.h>
 
 #define RF95_CS   17
 #define RF95_INT  20
@@ -10,6 +11,11 @@
 #define DATA_LED 1
 
 #define RF95_FREQ 915.0
+
+//Constants
+#define TireCirc 20.7
+
+int millisLast = 0;
 
 // Don't pass SPI here, let RadioHead use the default hardware_spi instance
 RH_RF95 rf95(RF95_CS, RF95_INT);
@@ -22,8 +28,6 @@ void setup() {
   pinMode(STATUS_LED, OUTPUT);
   pinMode(DATA_LED, OUTPUT);
   Serial.begin(115200);
-  
-  delay(5000); //waits 5 seconds before starting output and setup after plugging in device
 
   // Reset LoRa module
   digitalWrite(RF95_RST, LOW);
@@ -54,6 +58,8 @@ void setup() {
 }
 
 void loop() {
+  //float data[4]; //4 live data points Amps, volts, rpm, temp
+
   if (rf95.available()) {
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
     uint8_t len = sizeof(buf);
@@ -61,18 +67,39 @@ void loop() {
     if (rf95.recv(buf, &len)) {
       digitalWrite(LED_BUILTIN, HIGH);
       digitalWrite(DATA_LED, HIGH);
-
-      RH_RF95::printBuffer("Received bytes: ", buf, len);
-      Serial.println((char*)buf);
-      
-      uint8_t data[] = "RCV_CONF";
-      rf95.send(data, sizeof(data));
-      rf95.waitPacketSent();
-
+      //RH_RF95::printBuffer("Received bytes: ", buf, len);
+      /*
+      data[0] = std::stof();
+      data[1] =
+      data[2] = 
+      data[3] = 
+      */
       digitalWrite(LED_BUILTIN, LOW);
       digitalWrite(DATA_LED, LOW);
     } else {
       Serial.println("RX Fail");
     }
+
+  //float speed;
+  //speed = ((data[2]*TireCirc)*60)/63360; //Multiply RPMs by circumference (in inches) to get in/s estimate, then multiply by 60 to get in/hr, then divide by 63360 to get mph
+
+  if ((millisLast + 1000) <= millis()) {
+    /*
+    millisLast = millis();
+    Serial.printf("Amp Load: %f.2 \n", data[0]);
+    Serial.printf("Volts: %f.2 \n", data[1]);
+    Serial.printf("RPM: %f.1 \n", data[2]);
+    Serial.printf("Motor Temp: %f.1 C \n", data[3]);
+    Serial.printf("Estimated Speed: %f.1 MPH \n", speed);
+    Serial.printf("SNR: %i \n", rf95.lastSNR());
+    */
+  
+    Serial.println((char*)buf);
+    Serial.println("dBm (Siginal Strength)");
+    Serial.println(rf95.lastSNR());
+
+      }
+
+      
   }
 }
