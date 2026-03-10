@@ -237,8 +237,12 @@ void EEPROM_SAVE(struct DATA_BUFFER *foo) {
   } else {
     Y_ACEL_E = foo->Y_ACEL;
   }
+  
 //Find seconds elapsed 
 int time_E = floor(millis()/1000); //4 chars
+  if (time_E > 9999) {
+    time_E = 9999;
+  }
 
 char EEPROM_DATA[53]; //44 Chars without commas, 52 with commas, 53 with null termination
 sprintf(EEPROM_DATA, "%f.1,%f.1,%f.1,%f.2,%f.2,%f.3,%f.3,%i,\0", rpm_E, temp_M_E, temp_AMB_E, AMPS_E, VOLTAGE_E, X_ACEL_E, Y_ACEL_E, time_E); //Format data
