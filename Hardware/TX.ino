@@ -6,7 +6,6 @@
 #include <SD.h>
 #include <TC74.h>
 
-
 //Radio Pins
 #define RF95_CS   17
 #define RF95_INT  20
@@ -26,24 +25,15 @@
 #define TRANSMISSION_LONG
 #define TRANSMISSION_LAT
 
-
 struct DATA_BUFFER {
   float SEND_RPM; //RPMs
   float MOTOR_TEMP; //Motor
   float AMBIENT_TEMP; //From MCU
   float AMP_LOAD; 
   float VOLTAGE; //Batt voltage
-  float LAT;
-  float LONG;
   float X_ACEL; //Accelerometer data
   float Y_ACEL;
-  int UTC_HOUR; //UTC time from GPS
-  int UTC_MINUTE;
-  int UTC_SECOND;
-  int LAP; //# of laps calculated by GPS
-  int LAP_TIME;
   int TOTAL_TIME; 
-  int LoRa_SNR; //SNR (Signal to Noise Ratio)
 };
 
 void transmit(float param1, float param2, float param3, float param4, struct DATA_BUFFER *foo);
@@ -53,7 +43,6 @@ void saveData(struct DATA_BUFFER *foo);
 volatile unsigned long lastPulseTime = 0;
 volatile unsigned long pulseInterval = 0;
 volatile bool newPulse = false;
-
 
 TC74 dvc(0x48); //Initalizes TC74A03.3VAT as a sensor
 
@@ -77,6 +66,7 @@ void setup() {
   pinMode(VOLTAGE_DIVIDER, INPUT);
   pinMode(RPM_SENSE, INPUT_PULLUP);
   pinMode(RF95_RST, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(RF95_RST, HIGH);
   SPI.begin(); 
   SD.begin(SDcs);
@@ -113,15 +103,17 @@ void setup() {
   } else {
   SD.mkdir("telem");
   }
-
+/* //Depricated use EEPROM instead
   File dataLog = SD.open("TELEM.csv", FILE_WRITE);
   dataLog.println("RPM, M_TMP, A_TMP, AMPS, VOLTS, LAT, LONG, X_ACEL, Y_ACEL, UTC_HR, UTC_MIN, UTC_SEC, LAP, LAPT_TIME, TIME, LORA_SNR"); //Generate Header for file
   dataLog.close(); //Write changes to file
   digitalWrite(SDcs, HIGH);
-
+*/
   digitalWrite(BUZZER, HIGH);
   delay(200);
   digitalWrite(BUZZER, LOW);
+
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop() {
@@ -130,6 +122,12 @@ void loop() {
   int lastUpdateTime;
   float battVoltage;
   float temp;
+
+  if (digitalRead(RPM_SENSE) == LOW) {
+    digitalWrite(BUZZER, HIGH);
+  } else {
+    digitalWrite(BUZZER, LOW);
+  }
 
   struct DATA_BUFFER TEMP_BUF;
 
@@ -160,20 +158,29 @@ void loop() {
 
 void transmit(float param1, float param2, float param3, float param4, struct DATA_BUFFER *foo) {
   digitalWrite(RF95_CS, LOW); //Enable RF95 (Pull SPI CS Pin LOW)
-  Serial.println("Transmitting!"); 
   char dataSendSTR[25]; //Init 25 byte string with 4 bytes padding (assuming 1 byte per char)
   sprintf(dataSendSTR, "%f.2, %f.2, %f.1, %f.1,\0", param1, param2, param3, param4); //Format data
+  Serial.println(dataSendSTR);
   rf95.send((uint8_t *)dataSendSTR, sizeof(dataSendSTR)); //Send to LoRa buffers
   rf95.waitPacketSent(); 
   digitalWrite(RF95_CS, HIGH); //Disable RF95 (Push SPI CS Pin HIGH)
-  saveData(foo); //Save to SD Card
+ // saveData(foo); //Save to SD Card
+ loop();
 }
 
 void saveData(struct DATA_BUFFER *foo) {
   digitalWrite(SDcs, LOW); //Enable SD Card (Pull SPI CS Pin LOW)
   File dataLog = SD.open("TELEM.csv", FILE_WRITE);
-  dataLog.printf("%f.1, %f.1, %f.1, %f.2, %f.2, %f.6, %f.6, %f.3, %f.3, %i, %i, %i, %i, %i, %i, %i", foo->SEND_RPM, foo->MOTOR_TEMP, foo->AMBIENT_TEMP, foo->AMP_LOAD, foo->VOLTAGE, foo->LAT, foo->LONG, foo->X_ACEL, foo->Y_ACEL, foo->UTC_HOUR, foo->UTC_MINUTE, foo->UTC_SECOND, foo->LAP, foo->LAP_TIME, foo->TOTAL_TIME, foo->LoRa_SNR);
+  dataLog.printf("%f.1, %f.1, %f.1, %f.2, %f.2, %f.3, %f.3, %i", foo->SEND_RPM, foo->MOTOR_TEMP, foo->AMBIENT_TEMP, foo->AMP_LOAD, foo->VOLTAGE, foo->X_ACEL, foo->Y_ACEL, foo->TOTAL_TIME);
   dataLog.close();
   digitalWrite(SDcs, HIGH); //Disable SD Card (Push SPI CS Pin HIGH)
   loop();
+}
+
+void setup1(){
+  //Setup buffers for data to save with this core
+}
+
+void loop1(){
+  //This core will do TX/EEPROM, Core 0 needs to just gather data and send it
 }
