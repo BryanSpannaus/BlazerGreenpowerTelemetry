@@ -26,14 +26,13 @@
 #define TRANSMISSION_LAT
 
 struct DATA_BUFFER {
-  float SEND_RPM; //RPMs
+  float RPM; //RPMs
   float MOTOR_TEMP; //Motor
   float AMBIENT_TEMP; //From MCU
   float AMP_LOAD; 
   float VOLTAGE; //Batt voltage
   float X_ACEL; //Accelerometer data
   float Y_ACEL;
-  int TOTAL_TIME; 
 };
 
 void transmit(float param1, float param2, float param3, float param4, struct DATA_BUFFER *foo);
@@ -145,7 +144,7 @@ void loop() {
     }
   }
   //GPT Code End
-  TEMP_BUF.SEND_RPM = rpm;
+  TEMP_BUF.RPM = rpm;
 
   battVoltage = (analogRead(VOLTAGE_DIVIDER) * 24.8)/1005; //I have no idea where this proportion came from, testing
   TEMP_BUF.VOLTAGE = battVoltage;
@@ -170,8 +169,9 @@ void transmit(float param1, float param2, float param3, float param4, struct DAT
 
 void saveData(struct DATA_BUFFER *foo) {
   digitalWrite(SDcs, LOW); //Enable SD Card (Pull SPI CS Pin LOW)
+  int time = floor(millis()/1000);
   File dataLog = SD.open("TELEM.csv", FILE_WRITE);
-  dataLog.printf("%f.1, %f.1, %f.1, %f.2, %f.2, %f.3, %f.3, %i", foo->SEND_RPM, foo->MOTOR_TEMP, foo->AMBIENT_TEMP, foo->AMP_LOAD, foo->VOLTAGE, foo->X_ACEL, foo->Y_ACEL, foo->TOTAL_TIME);
+  dataLog.printf("%f.1, %f.1, %f.1, %f.2, %f.2, %f.3, %f.3, %i", foo->RPM, foo->MOTOR_TEMP, foo->AMBIENT_TEMP, foo->AMP_LOAD, foo->VOLTAGE, foo->X_ACEL, foo->Y_ACEL, time);
   dataLog.close();
   digitalWrite(SDcs, HIGH); //Disable SD Card (Push SPI CS Pin HIGH)
   loop();
@@ -183,4 +183,40 @@ void setup1(){
 
 void loop1(){
   //This core will do TX/EEPROM, Core 0 needs to just gather data and send it
+}
+
+void EEPROM_SAVE(struct DATA_BUFFER *foo) {
+//Format it first 
+  float rpm_E;
+  if (foo->RPM > 9999.9) {
+    rpm_E = 9999.9;
+  } else {
+    rpm_E = foo->RPM;
+  }
+  
+  float temp_M_E;
+  if (foo->MOTOR_TEMP > 999.9) {
+    temp_M_E = 999.9;
+  } else { 
+    temp_M_E = foo->MOTOR_TEMP;
+  }
+
+  float temp_AMB_E;
+  if (foo->AMBIENT_TEMP > 999.9) {
+    temp_AMB_E = 999.9;
+  } else {
+    temp_AMB_E = foo->AMBIENT_TEMP;
+  }
+
+  float AMPS_E;
+  if (foo->AMP_LOAD > 99.99) {
+    AMPS_E = 99.99;
+  } else {
+    AMPS_E = foo->AMP_LOAD;
+  }
+//Find seconds elapsed 
+int time = floor(millis()/1000); 
+
+
+  
 }
