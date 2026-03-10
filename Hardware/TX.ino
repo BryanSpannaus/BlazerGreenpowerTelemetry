@@ -185,38 +185,62 @@ void loop1(){
   //This core will do TX/EEPROM, Core 0 needs to just gather data and send it
 }
 
+//Implement this function in loop1
 void EEPROM_SAVE(struct DATA_BUFFER *foo) {
 //Format it first 
-  float rpm_E;
+  float rpm_E; //6 Chars
   if (foo->RPM > 9999.9) {
     rpm_E = 9999.9;
   } else {
     rpm_E = foo->RPM;
   }
   
-  float temp_M_E;
+  float temp_M_E; //5 Chars
   if (foo->MOTOR_TEMP > 999.9) {
     temp_M_E = 999.9;
   } else { 
     temp_M_E = foo->MOTOR_TEMP;
   }
 
-  float temp_AMB_E;
+  float temp_AMB_E; //5 Chars
   if (foo->AMBIENT_TEMP > 999.9) {
     temp_AMB_E = 999.9;
   } else {
     temp_AMB_E = foo->AMBIENT_TEMP;
   }
 
-  float AMPS_E;
+  float AMPS_E; //5 Chars
   if (foo->AMP_LOAD > 99.99) {
     AMPS_E = 99.99;
   } else {
     AMPS_E = foo->AMP_LOAD;
   }
-//Find seconds elapsed 
-int time = floor(millis()/1000); 
 
+  float VOLTAGE_E; //5 Chars
+  if (foo->VOLTAGE > 99.99) {
+    VOLTAGE_E = 99.99;
+  } else {
+    VOLTAGE_E = foo->VOLTAGE;
+  }
+
+  float X_ACEL_E; //7 chars
+  if (foo->X_ACEL > 999.999) {
+    X_ACEL_E = 999.999;
+  } else {
+    X_ACEL_E = foo->X_ACEL;
+  }
+  
+  float Y_ACEL_E; //7 chars
+  if (foo->Y_ACEL > 999.999) {
+    Y_ACEL_E = 999.999;
+  } else {
+    Y_ACEL_E = foo->Y_ACEL;
+  }
+//Find seconds elapsed 
+int time_E = floor(millis()/1000); //4 chars
+
+char EEPROM_DATA[53]; //44 Chars without commas, 52 with commas, 53 with null termination
+sprintf(EEPROM_DATA, "%f.1,%f.1,%f.1,%f.2,%f.2,%f.3,%f.3,%i,\0", rpm_E, temp_M_E, temp_AMB_E, AMPS_E, VOLTAGE_E, X_ACEL_E, Y_ACEL_E, time_E); //Format data
 
   
 }
