@@ -37,6 +37,7 @@ struct DATA_BUFFER {
 
 void transmit(float param1, float param2, float param3, float param4, struct DATA_BUFFER *foo);
 void saveData(struct DATA_BUFFER *foo);
+void EEPROM_SAVE(struct DATA_BUFFER *foo);
 
 //RPM Calculating Variables (used in hallISR, and Loop)
 volatile unsigned long lastPulseTime = 0;
@@ -242,5 +243,6 @@ int time_E = floor(millis()/1000); //4 chars
 char EEPROM_DATA[53]; //44 Chars without commas, 52 with commas, 53 with null termination
 sprintf(EEPROM_DATA, "%f.1,%f.1,%f.1,%f.2,%f.2,%f.3,%f.3,%i,\0", rpm_E, temp_M_E, temp_AMB_E, AMPS_E, VOLTAGE_E, X_ACEL_E, Y_ACEL_E, time_E); //Format data
 
+  //now the hard part, write through I2C to the right addr, right chip, etc.
   
 }
