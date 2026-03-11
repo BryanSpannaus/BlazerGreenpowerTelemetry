@@ -13,6 +13,20 @@
 
 #define RF95_FREQ 915.0
 
+//EEPROM Addresses
+
+#define EEPROM_0PAGE_0 0x50
+#define EEPROM_0PAGE_1 0x51
+
+#define EEPROM_1PAGE_0 0x50
+#define EEPROM_1PAGE_1 0x51
+
+#define EEPROM_2PAGE_0 0x50
+#define EEPROM_2PAGE_1 0x51
+
+#define EEPROM_3PAGE_0 0x50
+#define EEPROM_3PAGE_1 0x51
+
 //Input Pins
 #define RPM_SENSE 1
 #define VOLTAGE_DIVIDER A0
