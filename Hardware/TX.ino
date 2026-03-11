@@ -35,10 +35,11 @@
 #define BUZZER 0
 #define SDcs 7
 
+/*
 //Lat and Long transmit points
 #define TRANSMISSION_LONG
 #define TRANSMISSION_LAT
-
+*/
 struct DATA_BUFFER {
   float RPM; //RPMs
   float MOTOR_TEMP; //Motor
