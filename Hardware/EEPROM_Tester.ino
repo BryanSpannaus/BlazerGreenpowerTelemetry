@@ -11,6 +11,8 @@ void setup() {
   delay(1000);
   digitalWrite(1, HIGH);
 
+  while(!Serial()) { }
+  
   byte binarydata[datalength];
   char characterdata[datalength] = "Hello, there";
   memcpy(binarydata, characterdata, datalength);
